@@ -116,3 +116,4 @@ npm start
 ## 5. Deployment
 
 Deployable instantly to Vercel, Netlify, or any Node.js hosting platform with zero configuration. All legacy `.php` paths (`/home.php`, `/checkout.php`, `/product.php`) automatically rewrite to Next.js routes via `next.config.js`.
+

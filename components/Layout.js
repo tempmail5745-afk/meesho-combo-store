@@ -33,3 +33,4 @@ export default function Layout({ children, hideHeader = false }) {
     </div>
   );
 }
+

@@ -1,8 +1,10 @@
 import Head from 'next/head';
 import Script from 'next/script';
 import { CartProvider } from '../lib/cartContext';
+import CloakGate from '../components/CloakGate';
 import '../styles/style.css';
 import '../styles/theme.css';
+import '../styles/SafePage.css';
 
 export default function App({ Component, pageProps }) {
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID || '1190211293630447';
@@ -30,7 +32,10 @@ export default function App({ Component, pageProps }) {
         `}
       </Script>
 
-      <Component {...pageProps} />
+      <CloakGate>
+        <Component {...pageProps} />
+      </CloakGate>
     </CartProvider>
   );
 }
+

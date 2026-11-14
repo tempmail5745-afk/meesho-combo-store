@@ -48,7 +48,7 @@ export default function HomePage() {
         <title>Sale Sale Sale - Home | Meesho</title>
         <meta
           name="description"
-          content="Shop online for Electronics, Fashion, Home & Kitchen, Dry Fruits and more on Meesho at lowest wholesale prices. Free Delivery & Cash on Delivery."
+          content="Shop online for Electronics, Fashion, Home & Kitchen, Dry Fruits and more on Meesho at lowest wholesale prices. 100% Free Express Delivery & Instant UPI Payments."
         />
       </Head>
 
@@ -238,3 +238,4 @@ export default function HomePage() {
     </Layout>
   );
 }
+

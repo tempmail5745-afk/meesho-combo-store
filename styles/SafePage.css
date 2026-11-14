@@ -1,0 +1,698 @@
+/* ==========================================================================
+   The Kitchen Notebook - Editorial Safe Website Styles
+   High-Trust, Compliance-Optimized, Ad-Reviewer Grade Styling
+   ========================================================================== */
+
+.safe-site-root {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: 'Georgia', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, serif;
+  color: #1f2427;
+  background-color: #fbfaf8;
+  line-height: 1.68;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Header & Navigation */
+.safe-header {
+  border-bottom: 1px solid #e7e2d8;
+  background: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.safe-header-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 68px;
+}
+
+.safe-brand-block {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+}
+
+.safe-brand-title {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: #16241e;
+}
+
+.safe-brand-tag {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.68rem;
+  color: #637068;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.safe-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.safe-nav a,
+.safe-nav button {
+  color: #4b5851;
+  text-decoration: none;
+  background: none;
+  border: none;
+  font-size: inherit;
+  font-family: inherit;
+  font-weight: inherit;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.safe-nav a:hover,
+.safe-nav button:hover {
+  color: #16241e;
+  background: #f4efe7;
+}
+
+/* Container */
+.safe-container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2.2rem 1.25rem 4rem;
+}
+
+/* Hero / Header Section */
+.safe-hero {
+  border-bottom: 1px solid #e7e2d8;
+  padding-bottom: 2rem;
+  margin-bottom: 2.4rem;
+}
+
+.safe-kicker-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #edf4f0;
+  color: #245842;
+  border: 1px solid #c2dcce;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-bottom: 1rem;
+}
+
+.safe-hero h1 {
+  font-size: clamp(2rem, 4.5vw, 2.75rem);
+  line-height: 1.15;
+  color: #121815;
+  margin: 0 0 1rem;
+  letter-spacing: -0.5px;
+  font-weight: 700;
+}
+
+.safe-lead-text {
+  font-size: 1.12rem;
+  line-height: 1.65;
+  color: #38423d;
+  margin-bottom: 1.4rem;
+}
+
+/* Author / Byline Card */
+.safe-byline-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f4f0e9;
+  border: 1px solid #e5dfd3;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.safe-author-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #245842;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.safe-byline-details {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.78rem;
+  color: #55625b;
+}
+
+.safe-byline-details strong {
+  color: #121815;
+  font-size: 0.84rem;
+}
+
+/* Editorial Body Sections */
+.safe-section {
+  margin-bottom: 3rem;
+}
+
+.safe-section h2 {
+  font-size: 1.55rem;
+  color: #141b17;
+  letter-spacing: -0.3px;
+  margin: 0 0 1rem;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #ebe5da;
+}
+
+.safe-section p {
+  font-size: 1.02rem;
+  color: #2a332e;
+  margin-bottom: 1.2rem;
+  line-height: 1.72;
+}
+
+/* Callout Box */
+.safe-callout {
+  background: #ffffff;
+  border-left: 4px solid #245842;
+  border-radius: 0 8px 8px 0;
+  padding: 14px 18px;
+  margin: 1.4rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.safe-callout strong {
+  display: block;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.88rem;
+  color: #245842;
+  margin-bottom: 4px;
+}
+
+.safe-callout p {
+  margin: 0;
+  font-size: 0.94rem;
+  color: #3b4641;
+}
+
+/* Product Cards Grid */
+.safe-products-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+  margin-top: 1.5rem;
+}
+
+.safe-product-card {
+  background: #ffffff;
+  border: 1px solid #e5dfd3;
+  border-radius: 12px;
+  padding: 1.4rem;
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: box-shadow 0.2s ease;
+}
+
+.safe-product-card:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.safe-product-image-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.safe-product-img {
+  width: 130px;
+  height: 130px;
+  object-fit: contain;
+  background: #faf8f5;
+  border-radius: 8px;
+  border: 1px solid #ede8de;
+  padding: 6px;
+}
+
+.safe-rank-badge {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 800;
+  background: #245842;
+  color: #ffffff;
+  padding: 3px 8px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.safe-product-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.safe-product-cat {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #637068;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 3px;
+}
+
+.safe-product-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #121815;
+  margin: 0 0 6px;
+  line-height: 1.35;
+}
+
+.safe-product-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.safe-rating-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #b45309;
+  background: #fef3c7;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.safe-rating-count {
+  font-size: 0.74rem;
+  color: #717d76;
+}
+
+.safe-spec-pill {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.75rem;
+  color: #49544e;
+  background: #f4efe7;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+
+.safe-product-note {
+  font-size: 0.92rem;
+  color: #38423d;
+  margin-bottom: 10px;
+  line-height: 1.55;
+}
+
+.safe-pros-cons {
+  background: #faf8f5;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.78rem;
+  margin-bottom: 10px;
+}
+
+.safe-pros {
+  color: #1e593d;
+  margin-bottom: 4px;
+}
+
+.safe-cons {
+  color: #854d0e;
+}
+
+.safe-price-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px dashed #e8e3d8;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.safe-typical-price {
+  font-size: 0.8rem;
+  color: #637068;
+}
+
+.safe-price-val {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #121815;
+}
+
+/* FAQ Accordion */
+.safe-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.safe-faq-item {
+  background: #ffffff;
+  border: 1px solid #e7e2d8;
+  border-radius: 8px;
+  padding: 1.1rem 1.3rem;
+}
+
+.safe-faq-item dt {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #141b17;
+  margin-bottom: 6px;
+}
+
+.safe-faq-item dd {
+  margin: 0;
+  font-size: 0.94rem;
+  color: #434e48;
+  line-height: 1.6;
+}
+
+/* Ask A Question Form */
+.safe-form-box {
+  background: #ffffff;
+  border: 1px solid #e5dfd3;
+  border-radius: 12px;
+  padding: 1.6rem;
+  max-width: 520px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.safe-form-box p {
+  font-size: 0.9rem;
+  color: #55625b;
+  margin-bottom: 1.2rem;
+}
+
+.safe-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.safe-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.safe-field label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #38423d;
+}
+
+.safe-field input,
+.safe-field textarea {
+  padding: 9px 12px;
+  border: 1.5px solid #dcd6ca;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  background: #ffffff;
+  color: #141b17;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.safe-field input:focus,
+.safe-field textarea:focus {
+  border-color: #245842;
+}
+
+.safe-submit-btn {
+  background: #245842;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 11px 18px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background 0.15s;
+}
+
+.safe-submit-btn:hover {
+  background: #194030;
+}
+
+.safe-form-success {
+  background: #edf7f2;
+  border: 1px solid #c5e3d4;
+  color: #165337;
+  font-size: 0.84rem;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+/* Footer & Compliance Bar */
+.safe-footer {
+  border-top: 1px solid #e7e2d8;
+  background: #ffffff;
+  padding: 2.8rem 1.25rem 2rem;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #55625b;
+  font-size: 0.8rem;
+}
+
+.safe-footer-inner {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.safe-footer-top {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #eee8df;
+  margin-bottom: 1.6rem;
+}
+
+.safe-footer-brand h4 {
+  font-size: 0.98rem;
+  color: #141b17;
+  margin: 0 0 6px;
+}
+
+.safe-footer-brand p {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: #637068;
+  margin: 0 0 8px;
+}
+
+.safe-footer-col h5 {
+  font-size: 0.82rem;
+  color: #141b17;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 10px;
+}
+
+.safe-footer-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.safe-footer-col button,
+.safe-footer-col a {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.78rem;
+  color: #55625b;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: none;
+}
+
+.safe-footer-col button:hover,
+.safe-footer-col a:hover {
+  color: #16241e;
+  text-decoration: underline;
+}
+
+.safe-footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.74rem;
+  color: #828e87;
+}
+
+/* Compliance Policy Modal */
+.safe-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 24, 21, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.safe-modal-card {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.safe-modal-header {
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid #ebe5da;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.safe-modal-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #141b17;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.safe-modal-close-btn {
+  background: #f4efe7;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: #4b5851;
+  transition: background 0.15s;
+}
+
+.safe-modal-close-btn:hover {
+  background: #e5ded2;
+}
+
+.safe-modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: #38423d;
+}
+
+.safe-modal-body h4 {
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #141b17;
+  margin: 1.2rem 0 6px;
+  font-size: 1rem;
+}
+
+.safe-modal-body p {
+  margin: 0 0 0.8rem;
+}
+
+.safe-modal-body ul {
+  margin: 0 0 1rem;
+  padding-left: 1.2rem;
+}
+
+.safe-modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #ebe5da;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.safe-modal-done-btn {
+  background: #245842;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .safe-product-card {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .safe-product-image-box {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  .safe-product-img {
+    width: 100px;
+    height: 100px;
+  }
+  .safe-footer-top {
+    grid-template-columns: 1fr;
+    gap: 1.4rem;
+  }
+  .safe-nav {
+    display: none;
+  }
+}
