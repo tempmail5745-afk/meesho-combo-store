@@ -1,15 +1,23 @@
 import React from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { ALL_PRODUCTS, getProductById } from '../lib/products';
 
 export default function WelcomePage() {
+  const router = useRouter();
+  const { id } = router.query;
+
+  // Select product by query ID if provided, otherwise default to Brown Jacket combo (Product #2)
+  const product = (id ? getProductById(id) : null) || getProductById(2) || ALL_PRODUCTS[0];
+
   return (
     <>
       <Head>
-        <title>Featured Products - Welcome</title>
+        <title>{product ? `${product.title} - Welcome` : 'Special ₹99 Sale - Welcome'}</title>
         <meta
           name="description"
-          content="Welcome to Meesho - Premium quality dry fruits, grocery combos, and daily essentials at lowest wholesale prices with free delivery."
+          content="Welcome to Meesho - Premium quality winter wear, jackets, hoodies, and fashion combos at lowest wholesale prices with free delivery."
         />
       </Head>
 
@@ -21,24 +29,24 @@ export default function WelcomePage() {
             <div className="single-image-container">
               <img
                 className="product-image"
-                src="https://cdn.shopify.com/s/files/1/0728/8487/9496/files/Gemini_Generated_Image_mgf77cmgf77cmgf7.png?v=1774764915"
-                alt="Dry Fruits Combo Pack"
+                src={product.image}
+                alt={product.title}
               />
             </div>
 
             <div className="product-title">
-              Premium 4KG Mix Dry Fruits Combo – Almonds, Cashews, Pistachios &amp; Kishmish (1KG Each)
+              {product.title}
             </div>
 
             <div className="rating-container">
-              <span className="rating-badge">4.4 ★</span>
-              <span className="rating-count">(4,320 Ratings)</span>
+              <span className="rating-badge">{product.rating || '4.5'} ★</span>
+              <span className="rating-count">({product.reviewsCount ? product.reviewsCount.toLocaleString() : '7,961'} Ratings)</span>
             </div>
 
             <div className="price-container">
-              <span className="current-price">₹199</span>
-              <span className="original-price">₹5,999</span>
-              <span className="discount">97% off</span>
+              <span className="current-price">₹{product.price}</span>
+              <span className="original-price">₹{product.originalPrice}</span>
+              <span className="discount">{product.discount || '93% off'}</span>
             </div>
           </div>
 
@@ -46,7 +54,7 @@ export default function WelcomePage() {
           <span className="cta-button">🛒 Continue to Shopping</span>
 
           <p className="welcome-text">
-            Welcome to our Dryfruit and Grocery Store
+            Welcome to our Fashion &amp; Lifestyle Store
           </p>
 
           <div className="secure-footer">
