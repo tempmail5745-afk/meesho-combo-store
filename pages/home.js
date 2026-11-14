@@ -78,10 +78,13 @@ export default function HomePage() {
         {/* 3. Running Marquee: Buy 2 Get 1 Free */}
         <div className="marquee-nav">
           <div className="marquee-wrapper">
-            <div className="marquee-text-content">
-              <span>
-                ✨ BUY 2 GET 1 FREE OFFER LIVE NOW • EXTRA ₹33 OFF ON UPI PAYMENTS • 100% FREE DELIVERY ✨
-              </span>
+            <div className="marquee-track">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <React.Fragment key={i}>
+                  <span>Buy 2 Get 1 Free (Add 3 item to cart)</span>
+                  <span className="marquee-sep">&bull;</span>
+                </React.Fragment>
+              ))}
             </div>
           </div>
         </div>

@@ -20,6 +20,23 @@ body {
   padding: 0;
 }
 
+/* Flex utilities */
+.d-flex {
+  display: flex !important;
+}
+.align-items-center {
+  align-items: center !important;
+}
+.justify-content-between {
+  justify-content: space-between !important;
+}
+.flex-row {
+  flex-direction: row !important;
+}
+.flex-nowrap {
+  flex-wrap: nowrap !important;
+}
+
 /* ==========================================
    MOBILE SHELL FRAME (Centered on Desktop)
    ========================================== */
@@ -46,11 +63,22 @@ body {
 }
 
 ._1FWdmb {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
   padding: 10px 14px 6px;
   background-color: #ffffff;
+}
+
+.header-left {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-shrink: 0 !important;
 }
 
 ._3NH1qf-btn {
@@ -58,10 +86,11 @@ body {
   border: none;
   cursor: pointer;
   padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   position: relative;
+  flex-shrink: 0 !important;
 }
 
 .Z4_K_h-btn {
@@ -69,8 +98,9 @@ body {
   border: none;
   cursor: pointer;
   padding: 2px 8px;
-  display: flex;
-  align-items: center;
+  display: inline-flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
 }
 
 .header-title {
@@ -82,9 +112,12 @@ body {
 }
 
 .header-menu {
-  display: flex;
-  align-items: center;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
   gap: 12px;
+  flex-shrink: 0 !important;
 }
 
 .header__wishlist-count {
@@ -222,6 +255,8 @@ body {
   display: inline-flex;
   white-space: nowrap;
   animation: marqueeMove 18s linear infinite;
+  -webkit-animation: marqueeMove 18s linear infinite;
+  will-change: transform;
 }
 
 .marquee-track span {
@@ -237,8 +272,13 @@ body {
 }
 
 @keyframes marqueeMove {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% { transform: translateX(0); -webkit-transform: translateX(0); }
+  100% { transform: translateX(-50%); -webkit-transform: translateX(-50%); }
+}
+
+@-webkit-keyframes marqueeMove {
+  0% { -webkit-transform: translateX(0); }
+  100% { -webkit-transform: translateX(-50%); }
 }
 
 /* ==========================================
