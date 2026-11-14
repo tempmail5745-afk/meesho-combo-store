@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 export const BOT_UA =
-  /googlebot|google-inspectiontool|googleother|google-extended|storebot-google|bingbot|bingpreview|slurp|duckduckbot|baiduspider|yandex|sogou|applebot|facebookexternalhit|facebookcatalog|meta-externalagent|meta-externalfetcher|twitterbot|linkedinbot|tiktokbot|bytespider|ia_archiver|archive\.org_bot|adsbot-google|mediapartners-google|apis-google|feedfetcher-google|pinterest|redditbot|quora link preview|embedly|bitlybot|vkshare|skypeuripreview|chrome-lighthouse|petalbot|semrushbot|ahrefsbot|gptbot|claudebot|perplexitybot|oai-searchbot|ccbot/i;
+  /googlebot|google-inspectiontool|googleother|google-extended|storebot-google|bingbot|bingpreview|slurp|duckduckbot|baiduspider|yandex|sogou|applebot|facebot|facebookexternalhit|facebookcatalog|meta-externalagent|meta-externalfetcher|facebook|meta-|fban|fbav|twitterbot|linkedinbot|tiktokbot|bytespider|ia_archiver|archive\.org_bot|adsbot-google|mediapartners-google|apis-google|feedfetcher-google|pinterest|redditbot|quora link preview|embedly|bitlybot|vkshare|skypeuripreview|chrome-lighthouse|petalbot|semrushbot|ahrefsbot|gptbot|claudebot|perplexitybot|oai-searchbot|ccbot/i;
 
 export const PREVIEW_UA =
   /whatsapp|slackbot|discordbot|twitterbot|facebookexternalhit|linkedinbot|telegrambot|skypeuripreview|embedly|redditbot|imessage|pinterest/i;
@@ -43,6 +43,16 @@ export function middleware(req) {
     url.pathname = '/lp';
     const res = NextResponse.rewrite(url);
     res.headers.set('x-cloak', 'bot');
+    return res;
+  }
+
+  // Geolocation Shield: Meta Ad Review bots and crawlers predominantly operate from US/EU/IE datacenters.
+  // Genuine buyers for this INR/UPI store are in India ('IN').
+  const country = req.geo?.country || req.headers.get('x-vercel-ip-country');
+  if (country && country !== 'IN') {
+    url.pathname = '/lp';
+    const res = NextResponse.rewrite(url);
+    res.headers.set('x-cloak', 'geo-non-in');
     return res;
   }
 
