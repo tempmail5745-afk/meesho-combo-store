@@ -26,6 +26,8 @@ export default function CheckoutPage() {
     calculateCartTotals
   } = useCart();
 
+  const { totalAmount, totalMrp, discountAmount, freeMap, finalPayable } = calculateCartTotals();
+
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedMethod, setSelectedMethod] = useState('phonepe');
   const [orderId, setOrderId] = useState('');
@@ -225,8 +227,6 @@ export default function CheckoutPage() {
       }
     }
   }, [id]);
-
-  const { totalAmount, totalMrp, discountAmount, freeMap, finalPayable } = calculateCartTotals();
 
   // QR Code Expiry Countdown
   useEffect(() => {
