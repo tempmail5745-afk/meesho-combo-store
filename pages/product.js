@@ -23,6 +23,17 @@ export default function ProductDetailPage() {
       if (p.sizes && p.sizes.length > 0) {
         setSelectedSize(p.sizes[2] || p.sizes[0]);
       }
+      if (typeof window !== 'undefined' && window.fbq && p) {
+        try {
+          window.fbq('track', 'ViewContent', {
+            content_name: p.title,
+            content_ids: [String(p.id)],
+            content_type: 'product',
+            value: p.price,
+            currency: 'INR'
+          });
+        } catch (_) {}
+      }
     }
   }, [id]);
 

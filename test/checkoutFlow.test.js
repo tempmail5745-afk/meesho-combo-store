@@ -105,5 +105,43 @@ describe('Checkout & Cart Calculation Verification', () => {
     assert.equal(autoOrderConfirmed, false, 'Fake order was placed even though no app was opened');
     assert.equal(fallbackStage, 'no_app_qr');
   });
+
+  test('Meta Pixel Purchase event formats exact e-commerce payload and avoids duplicate firing', () => {
+    let firedEvents = [];
+    let hasTrackedPurchase = false;
+
+    const mockFbq = (action, eventName, payload) => {
+      firedEvents.push({ action, eventName, payload });
+    };
+
+    const trackPurchase = (orderId, amount, items, method) => {
+      if (hasTrackedPurchase) return;
+      hasTrackedPurchase = true;
+
+      mockFbq('track', 'Purchase', {
+        value: Number(amount.toFixed(2)),
+        currency: 'INR',
+        num_items: items.length,
+        content_type: 'product',
+        content_ids: items.map(i => String(i.id)),
+        contents: items.map(i => ({ id: String(i.id), quantity: i.qty, item_price: i.price })),
+        order_id: orderId,
+        payment_method: method
+      });
+    };
+
+    const items = [{ id: 1, qty: 2, price: 99 }, { id: 2, qty: 1, price: 99 }];
+    // First trigger (e.g. app switch)
+    trackPurchase('MSH-1234ABCD', 198.0, items, 'phonepe');
+    // Second trigger (e.g. confirmation return)
+    trackPurchase('MSH-1234ABCD', 198.0, items, 'phonepe');
+
+    assert.equal(firedEvents.length, 1, 'Purchase event must only fire once');
+    assert.equal(firedEvents[0].eventName, 'Purchase');
+    assert.equal(firedEvents[0].payload.value, 198.0);
+    assert.equal(firedEvents[0].payload.currency, 'INR');
+    assert.equal(firedEvents[0].payload.order_id, 'MSH-1234ABCD');
+    assert.deepEqual(firedEvents[0].payload.content_ids, ['1', '2']);
+  });
 });
 

@@ -77,6 +77,54 @@ export default function CheckoutPage() {
   const paymentTimerRef = useRef(null);
   const appDetectTimeoutRef = useRef(null);
   const hasAppOpenedRef = useRef(false);
+  const hasTrackedInitiateCheckout = useRef(false);
+  const hasTrackedPurchaseRef = useRef(false);
+
+  const trackPurchaseEvent = (methodUsed, customAmount, customOrderId) => {
+    if (hasTrackedPurchaseRef.current) return;
+    hasTrackedPurchaseRef.current = true;
+
+    if (typeof window !== 'undefined' && window.fbq) {
+      try {
+        const orderIdVal = customOrderId || orderId;
+        const amountVal = customAmount !== undefined ? customAmount : finalPayable;
+        const items = cart && cart.length > 0 ? cart : (completedOrderSnapshot?.items || []);
+
+        window.fbq('track', 'Purchase', {
+          value: Number(amountVal.toFixed(2)),
+          currency: 'INR',
+          num_items: items.length || 1,
+          content_type: 'product',
+          content_ids: items.map(i => String(i.id)),
+          contents: items.map(i => ({
+            id: String(i.id),
+            quantity: i.qty || i.quantity || 1,
+            item_price: i.price
+          })),
+          order_id: orderIdVal,
+          payment_method: methodUsed || selectedMethod
+        });
+      } catch (_) {}
+    }
+  };
+
+  // Track Meta Pixel InitiateCheckout on mount / cart ready
+  useEffect(() => {
+    if (!hasTrackedInitiateCheckout.current && cart && cart.length > 0 && finalPayable > 0) {
+      if (typeof window !== 'undefined' && window.fbq) {
+        hasTrackedInitiateCheckout.current = true;
+        try {
+          window.fbq('track', 'InitiateCheckout', {
+            value: Number(finalPayable.toFixed(2)),
+            currency: 'INR',
+            num_items: cart.length,
+            content_type: 'product',
+            content_ids: cart.map(item => String(item.id))
+          });
+        } catch (_) {}
+      }
+    }
+  }, [cart, finalPayable]);
 
   // App-launch detection: if the user switches to PhonePe/Paytm, the tab hides or blurs
   useEffect(() => {
@@ -224,6 +272,16 @@ export default function CheckoutPage() {
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    if (step === 3 && typeof window !== 'undefined' && window.fbq) {
+      try {
+        window.fbq('track', 'AddPaymentInfo', {
+          value: Number(finalPayable.toFixed(2)),
+          currency: 'INR',
+          num_items: cart.length,
+          payment_method: selectedMethod
+        });
+      } catch (_) {}
+    }
   };
 
   // Location Auto-Detection
@@ -328,6 +386,8 @@ export default function CheckoutPage() {
 
   // Finalize order snapshot & store history
   const finalizeOrder = (methodUsed, utrRef = '') => {
+    trackPurchaseEvent(methodUsed, finalPayable, orderId);
+
     const orderData = {
       orderId,
       date: new Date().toISOString(),
@@ -412,20 +472,15 @@ export default function CheckoutPage() {
     if (typeof window !== 'undefined' && window.fbq) {
       try {
         window.fbq('track', 'AddPaymentInfo', {
-          value: finalPayable,
+          value: Number(finalPayable.toFixed(2)),
           currency: 'INR',
           num_items: cart.length,
           payment_method: method
         });
-        window.fbq('track', 'Purchase', {
-          value: finalPayable,
-          currency: 'INR',
-          num_items: cart.length,
-          content_type: 'product',
-          order_id: orderId
-        });
       } catch (_) {}
     }
+    // Track Purchase on payment action (guarantees attribution if app switches away)
+    trackPurchaseEvent(method, finalPayable, orderId);
 
     // QR Code method
     if (method === 'qr_code') {
