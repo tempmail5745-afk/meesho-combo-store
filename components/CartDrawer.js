@@ -111,7 +111,7 @@ export default function CartDrawer() {
                 Your cart is empty!
               </p>
               <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 20px' }}>
-                Explore our popular combos starting from ₹99.
+                Explore our popular combos starting from ₹149.
               </p>
               <button
                 type="button"

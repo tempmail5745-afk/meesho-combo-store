@@ -78,7 +78,7 @@ describe('Merchant Configuration & Routing Verification', () => {
     assert.equal(ALL_PRODUCTS.length, 32);
     ALL_PRODUCTS.forEach(p => {
       assert.ok(p.id >= 1 && p.id <= 32);
-      assert.ok(p.price === 99);
+      assert.ok(p.price === 149);
       assert.ok(p.image.startsWith('/images/products/'));
     });
   });
