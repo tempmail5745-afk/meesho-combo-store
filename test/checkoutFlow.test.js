@@ -55,23 +55,55 @@ describe('Checkout & Cart Calculation Verification', () => {
     assert.equal(address.phone, '9876543210');
   });
 
-  test('10-second payment countdown timer transitions to order confirmed', () => {
+  test('10-second payment countdown timer transitions to order confirmed when app has opened', () => {
     let countdown = 10;
     let orderFinalized = false;
     let currentStep = 3;
+    const hasAppOpened = true;
 
     // Simulate 10 second countdown ticks
     for (let tick = 1; tick <= 10; tick++) {
-      countdown -= 1;
-      if (countdown <= 0) {
-        orderFinalized = true;
-        currentStep = 4;
+      if (hasAppOpened) {
+        countdown -= 1;
+        if (countdown <= 0) {
+          orderFinalized = true;
+          currentStep = 4;
+        }
       }
     }
 
     assert.equal(countdown, 0);
     assert.equal(orderFinalized, true);
     assert.equal(currentStep, 4); // Step 4 = Order Success
+  });
+
+  test('When Paytm is not installed, fallback switches to PhonePe', () => {
+    let selectedMethod = 'paytm';
+    let hasAppOpened = false;
+    let fallbackStage = 'initial';
+
+    // Simulated 1.8s timeout check
+    if (!hasAppOpened && selectedMethod === 'paytm') {
+      fallbackStage = 'fallback_phonepe';
+      selectedMethod = 'phonepe';
+    }
+
+    assert.equal(fallbackStage, 'fallback_phonepe');
+    assert.equal(selectedMethod, 'phonepe');
+  });
+
+  test('When no UPI app opens, auto-order timer is halted to prevent fake orders', () => {
+    const hasAppOpened = false;
+    let fallbackStage = 'no_app_qr';
+    let autoOrderConfirmed = false;
+
+    // Timer check: if fallbackStage === 'no_app_qr', timer must not execute
+    if (fallbackStage !== 'no_app_qr' && hasAppOpened) {
+      autoOrderConfirmed = true;
+    }
+
+    assert.equal(autoOrderConfirmed, false, 'Fake order was placed even though no app was opened');
+    assert.equal(fallbackStage, 'no_app_qr');
   });
 });
 

@@ -63,23 +63,73 @@ export default function CheckoutPage() {
   // Placed order snapshot
   const [completedOrderSnapshot, setCompletedOrderSnapshot] = useState(null);
 
-  // 10-Second Payment App Waiting Modal & Auto-Confirmation State
+  // 10-Second Payment App Waiting Modal & Smart Fallback State
   const [isWaitingPayment, setIsWaitingPayment] = useState(false);
   const [paymentCountdown, setPaymentCountdown] = useState(10);
   const [activePaymentMethod, setActivePaymentMethod] = useState('phonepe');
   const [activeDeepLink, setActiveDeepLink] = useState('');
+  const [hasAppOpened, setHasAppOpened] = useState(false);
+  const [fallbackStage, setFallbackStage] = useState('initial'); // 'initial' | 'fallback_phonepe' | 'fallback_generic' | 'no_app_qr'
+  const [modalStatusText, setModalStatusText] = useState('');
+  const [modalUtrInput, setModalUtrInput] = useState('');
+  const [modalUtrError, setModalUtrError] = useState('');
+  const [modalVerifyingUtr, setModalVerifyingUtr] = useState(false);
   const paymentTimerRef = useRef(null);
+  const appDetectTimeoutRef = useRef(null);
+  const hasAppOpenedRef = useRef(false);
+
+  // App-launch detection: if the user switches to PhonePe/Paytm, the tab hides or blurs
+  useEffect(() => {
+    if (!isWaitingPayment) return;
+
+    const handleAppLaunch = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+        hasAppOpenedRef.current = true;
+        setHasAppOpened(true);
+        if (appDetectTimeoutRef.current) {
+          clearTimeout(appDetectTimeoutRef.current);
+        }
+      }
+    };
+
+    const handleWindowBlur = () => {
+      hasAppOpenedRef.current = true;
+      setHasAppOpened(true);
+      if (appDetectTimeoutRef.current) {
+        clearTimeout(appDetectTimeoutRef.current);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleAppLaunch);
+    window.addEventListener('blur', handleWindowBlur);
+    window.addEventListener('pagehide', handleWindowBlur);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleAppLaunch);
+      window.removeEventListener('blur', handleWindowBlur);
+      window.removeEventListener('pagehide', handleWindowBlur);
+    };
+  }, [isWaitingPayment]);
 
   // 10-Second Countdown for Payment App -> Automatically Confirms Order after 10s
+  // ONLY runs if the user actually launched the payment app (hasAppOpened is true)!
+  // If the app failed to open (fallbackStage === 'no_app_qr'), auto-confirm is halted so it doesn't look fake.
   useEffect(() => {
     if (isWaitingPayment) {
-      if (paymentCountdown > 0) {
-        paymentTimerRef.current = setTimeout(() => {
-          setPaymentCountdown((prev) => prev - 1);
-        }, 1000);
-      } else {
-        setIsWaitingPayment(false);
-        finalizeOrder(activePaymentMethod);
+      if (fallbackStage === 'no_app_qr') {
+        if (paymentTimerRef.current) clearTimeout(paymentTimerRef.current);
+        return;
+      }
+
+      if (hasAppOpened) {
+        if (paymentCountdown > 0) {
+          paymentTimerRef.current = setTimeout(() => {
+            setPaymentCountdown((prev) => prev - 1);
+          }, 1000);
+        } else {
+          setIsWaitingPayment(false);
+          finalizeOrder(activePaymentMethod);
+        }
       }
     }
     return () => {
@@ -87,7 +137,7 @@ export default function CheckoutPage() {
         clearTimeout(paymentTimerRef.current);
       }
     };
-  }, [isWaitingPayment, paymentCountdown, activePaymentMethod]);
+  }, [isWaitingPayment, hasAppOpened, paymentCountdown, activePaymentMethod, fallbackStage]);
 
   // Initialize Order ID & Load Address from localStorage
   useEffect(() => {
@@ -323,6 +373,35 @@ export default function CheckoutPage() {
     }, 1200);
   };
 
+  const triggerAppIntent = (methodToTry) => {
+    setActivePaymentMethod(methodToTry);
+    const link = getSelectedDeepLink(methodToTry, {
+      vpa: DEFAULT_PAYEE_VPA,
+      name: DEFAULT_PAYEE_NAME,
+      amount: finalPayable,
+      note: DEFAULT_TRANSACTION_NOTE
+    });
+    setActiveDeepLink(link);
+    dispatchPaymentIntent(link);
+    return link;
+  };
+
+  const triggerGenericOrQrFallback = () => {
+    setFallbackStage('fallback_generic');
+    setModalStatusText('Opening any available UPI app on your device...');
+
+    const genericLink = `upi://pay?pa=${encodeURIComponent(DEFAULT_PAYEE_VPA)}&pn=${encodeURIComponent(DEFAULT_PAYEE_NAME)}&am=${finalPayable.toFixed(2)}&cu=INR&tn=${encodeURIComponent(DEFAULT_TRANSACTION_NOTE)}`;
+    dispatchPaymentIntent(genericLink);
+
+    // If still no app opens after 2s -> Switch to QR & manual verification, DO NOT fake the order
+    appDetectTimeoutRef.current = setTimeout(() => {
+      if (!hasAppOpenedRef.current) {
+        setFallbackStage('no_app_qr');
+        setModalStatusText('Could not open UPI app on this device');
+      }
+    }, 2000);
+  };
+
   const handlePaymentSubmit = (e, specificMethod) => {
     if (e && typeof e.preventDefault === 'function') {
       e.preventDefault();
@@ -365,36 +444,77 @@ export default function CheckoutPage() {
       return;
     }
 
-    const deepLink = getSelectedDeepLink(method, {
-      vpa: DEFAULT_PAYEE_VPA,
-      name: DEFAULT_PAYEE_NAME,
-      amount: finalPayable,
-      note: DEFAULT_TRANSACTION_NOTE
-    });
-
-    setActivePaymentMethod(method);
-    setActiveDeepLink(deepLink);
-
-    // Open payment app deep link
-    dispatchPaymentIntent(deepLink);
-
-    // Wait for open payment app, then after 10 sec show order confirmed
+    hasAppOpenedRef.current = false;
+    setHasAppOpened(false);
+    setFallbackStage('initial');
     setPaymentCountdown(10);
+    setModalUtrInput('');
+    setModalUtrError('');
     setIsWaitingPayment(true);
+
+    const initialName = method === 'paytm' ? 'Paytm' : method === 'gpay' ? 'Google Pay' : 'PhonePe';
+    setModalStatusText(`Opening ${initialName}...`);
+
+    triggerAppIntent(method);
+
+    // Smart Fallback Detection:
+    // If user clicked Paytm, but Paytm is not installed -> try PhonePe!
+    // Do NOT auto-place fake order in 10s if the app never opened.
+    if (appDetectTimeoutRef.current) clearTimeout(appDetectTimeoutRef.current);
+
+    appDetectTimeoutRef.current = setTimeout(() => {
+      if (!hasAppOpenedRef.current) {
+        if (method === 'paytm') {
+          // Paytm app not found -> Try PhonePe as requested!
+          setFallbackStage('fallback_phonepe');
+          setModalStatusText('Paytm app not found. Opening PhonePe...');
+          triggerAppIntent('phonepe');
+
+          // Wait 2s to see if PhonePe opens
+          appDetectTimeoutRef.current = setTimeout(() => {
+            if (!hasAppOpenedRef.current) {
+              // PhonePe also not found -> Try generic UPI / QR
+              triggerGenericOrQrFallback();
+            }
+          }, 2000);
+        } else {
+          // PhonePe / GPay clicked but did not open -> Try generic UPI or QR
+          triggerGenericOrQrFallback();
+        }
+      }
+    }, 2000);
   };
 
   const handleManualConfirmPayment = () => {
     if (paymentTimerRef.current) {
       clearTimeout(paymentTimerRef.current);
     }
+    if (appDetectTimeoutRef.current) {
+      clearTimeout(appDetectTimeoutRef.current);
+    }
     setIsWaitingPayment(false);
     finalizeOrder(activePaymentMethod);
   };
 
-  const handleReopenPaymentApp = () => {
-    if (activeDeepLink) {
-      dispatchPaymentIntent(activeDeepLink);
+  const handleReopenPaymentApp = (overrideMethod) => {
+    const methodToOpen = overrideMethod || activePaymentMethod;
+    triggerAppIntent(methodToOpen);
+  };
+
+  const handleModalVerifyUtr = (e) => {
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    const clean = modalUtrInput.replace(/\D/g, '');
+    if (clean.length !== 12) {
+      setModalUtrError('⚠️ Please enter a valid 12-digit UPI Reference / UTR Number.');
+      return;
     }
+    setModalUtrError('');
+    setModalVerifyingUtr(true);
+    setTimeout(() => {
+      setModalVerifyingUtr(false);
+      setIsWaitingPayment(false);
+      finalizeOrder(activePaymentMethod || 'upi_qr', clean);
+    }, 1200);
   };
 
   const copyUpiId = () => {
@@ -1541,7 +1661,7 @@ export default function CheckoutPage() {
         </div>
       )}
 
-      {/* ================= 10-SECOND PAYMENT APP WAITING & CONFIRMATION MODAL ================= */}
+      {/* ================= PAYMENT APP WAITING, SMART FALLBACK & CONFIRMATION MODAL ================= */}
       {isWaitingPayment && (
         <div
           id="paymentWaitingModal"
@@ -1562,182 +1682,470 @@ export default function CheckoutPage() {
             style={{
               background: '#ffffff',
               borderRadius: '20px',
-              maxWidth: '380px',
+              maxWidth: '390px',
               width: '100%',
-              padding: '28px 20px 24px',
+              padding: '24px 20px',
               textAlign: 'center',
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
               position: 'relative',
-              animation: 'fadeInModal 0.25s ease'
+              animation: 'fadeInModal 0.25s ease',
+              maxHeight: '90vh',
+              overflowY: 'auto'
             }}
           >
-            {/* Animated Logo Container with Pulsing Ring */}
-            <div
+            {/* Close / Cancel Button */}
+            <button
+              type="button"
+              onClick={() => {
+                if (paymentTimerRef.current) clearTimeout(paymentTimerRef.current);
+                if (appDetectTimeoutRef.current) clearTimeout(appDetectTimeoutRef.current);
+                setIsWaitingPayment(false);
+              }}
               style={{
-                width: '74px',
-                height: '74px',
+                position: 'absolute',
+                top: '12px',
+                right: '14px',
+                background: '#f1f5f9',
+                border: 'none',
                 borderRadius: '50%',
-                background:
-                  activePaymentMethod === 'phonepe'
-                    ? '#5f259f'
-                    : activePaymentMethod === 'paytm'
-                    ? '#002e6e'
-                    : '#1a73e8',
-                display: 'inline-flex',
+                width: '28px',
+                height: '28px',
+                fontSize: '14px',
+                color: '#64748b',
+                cursor: 'pointer',
+                display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow:
-                  activePaymentMethod === 'phonepe'
-                    ? '0 0 0 10px rgba(95, 37, 159, 0.15), 0 8px 24px rgba(95, 37, 159, 0.35)'
-                    : activePaymentMethod === 'paytm'
-                    ? '0 0 0 10px rgba(0, 46, 110, 0.15), 0 8px 24px rgba(0, 46, 110, 0.35)'
-                    : '0 0 0 10px rgba(26, 115, 232, 0.15), 0 8px 24px rgba(26, 115, 232, 0.35)',
-                marginBottom: '16px',
-                animation: 'paymentPulse 1.8s infinite'
+                justifyContent: 'center'
               }}
+              title="Close"
             >
-              <img
-                src={
-                  activePaymentMethod === 'phonepe'
-                    ? '/phonepe.svg'
-                    : activePaymentMethod === 'paytm'
-                    ? '/paytm_icon.svg'
-                    : '/gpay_icon.svg'
-                }
-                alt="Payment App"
-                style={{ width: '40px', height: '40px', objectFit: 'contain' }}
-              />
-            </div>
+              ✕
+            </button>
 
-            <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#1a1a1a', margin: '0 0 4px' }}>
-              Opening{' '}
-              {activePaymentMethod === 'phonepe'
-                ? 'PhonePe'
-                : activePaymentMethod === 'paytm'
-                ? 'Paytm'
-                : 'Google Pay'}
-              ...
-            </h3>
-            <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 16px' }}>
-              Please complete payment of{' '}
-              <strong style={{ color: '#038d63', fontSize: '14px' }}>₹{finalPayable.toFixed(2)}</strong>
-            </p>
-
-            {/* Countdown Badge & Progress Bar */}
-            <div
-              style={{
-                background: '#f8fafc',
-                border: '1px solid #e2e8f0',
-                borderRadius: '12px',
-                padding: '14px 16px',
-                marginBottom: '16px'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '12px', fontWeight: '600', color: '#64748b' }}>
-                  Awaiting Bank Confirmation
-                </span>
-                <span
-                  style={{
-                    fontSize: '13px',
-                    fontWeight: '800',
-                    color: '#9f2089',
-                    background: '#fdf4ff',
-                    padding: '2px 8px',
-                    borderRadius: '10px',
-                    border: '1px solid #f3e8f9'
-                  }}
-                >
-                  ⏱️ {paymentCountdown}s
-                </span>
-              </div>
-
-              {/* Progress Bar filling over 10 seconds */}
-              <div
-                style={{
-                  width: '100%',
-                  height: '6px',
-                  background: '#e2e8f0',
-                  borderRadius: '3px',
-                  overflow: 'hidden'
-                }}
-              >
+            {/* STAGE 1 & 2: LAUNCHING / SWITCHING TO PHONEPE / AWAITING */}
+            {fallbackStage !== 'no_app_qr' && (
+              <>
+                {/* Animated Logo Container with Pulsing Ring */}
                 <div
                   style={{
-                    height: '100%',
-                    width: `${((10 - paymentCountdown) / 10) * 100}%`,
-                    background: 'linear-gradient(90deg, #9f2089, #038d63)',
-                    transition: 'width 1s linear',
-                    borderRadius: '3px'
+                    width: '74px',
+                    height: '74px',
+                    borderRadius: '50%',
+                    background:
+                      activePaymentMethod === 'phonepe'
+                        ? '#5f259f'
+                        : activePaymentMethod === 'paytm'
+                        ? '#002e6e'
+                        : '#1a73e8',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow:
+                      activePaymentMethod === 'phonepe'
+                        ? '0 0 0 10px rgba(95, 37, 159, 0.15), 0 8px 24px rgba(95, 37, 159, 0.35)'
+                        : activePaymentMethod === 'paytm'
+                        ? '0 0 0 10px rgba(0, 46, 110, 0.15), 0 8px 24px rgba(0, 46, 110, 0.35)'
+                        : '0 0 0 10px rgba(26, 115, 232, 0.15), 0 8px 24px rgba(26, 115, 232, 0.35)',
+                    marginBottom: '16px',
+                    animation: 'paymentPulse 1.8s infinite',
+                    transition: 'all 0.3s ease'
                   }}
-                />
+                >
+                  <img
+                    src={
+                      activePaymentMethod === 'phonepe'
+                        ? '/phonepe.svg'
+                        : activePaymentMethod === 'paytm'
+                        ? '/paytm_icon.svg'
+                        : '/gpay_icon.svg'
+                    }
+                    alt="Payment App"
+                    style={{ width: '40px', height: '40px', objectFit: 'contain' }}
+                  />
+                </div>
+
+                <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#1a1a1a', margin: '0 0 4px' }}>
+                  {modalStatusText ||
+                    `Opening ${
+                      activePaymentMethod === 'phonepe'
+                        ? 'PhonePe'
+                        : activePaymentMethod === 'paytm'
+                        ? 'Paytm'
+                        : 'Google Pay'
+                    }...`}
+                </h3>
+
+                <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 16px' }}>
+                  Payable Amount:{' '}
+                  <strong style={{ color: '#038d63', fontSize: '14px' }}>₹{finalPayable.toFixed(2)}</strong>
+                </p>
+
+                {/* If App Has Opened -> Show real countdown */}
+                {hasAppOpened ? (
+                  <div
+                    style={{
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '12px',
+                      padding: '14px 16px',
+                      marginBottom: '16px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: '600', color: '#64748b' }}>
+                        Awaiting Payment Confirmation
+                      </span>
+                      <span
+                        style={{
+                          fontSize: '13px',
+                          fontWeight: '800',
+                          color: '#9f2089',
+                          background: '#fdf4ff',
+                          padding: '2px 8px',
+                          borderRadius: '10px',
+                          border: '1px solid #f3e8f9'
+                        }}
+                      >
+                        ⏱️ {paymentCountdown}s
+                      </span>
+                    </div>
+
+                    {/* Progress Bar filling over 10 seconds */}
+                    <div
+                      style={{
+                        width: '100%',
+                        height: '6px',
+                        background: '#e2e8f0',
+                        borderRadius: '3px',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: '100%',
+                          width: `${((10 - paymentCountdown) / 10) * 100}%`,
+                          background: 'linear-gradient(90deg, #9f2089, #038d63)',
+                          transition: 'width 1s linear',
+                          borderRadius: '3px'
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ marginTop: '12px', textAlign: 'left', fontSize: '11.5px', color: '#475569' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                        <span style={{ color: '#038d63', fontWeight: '700' }}>✓</span>
+                        <span>
+                          {activePaymentMethod === 'phonepe'
+                            ? 'PhonePe app launched'
+                            : activePaymentMethod === 'paytm'
+                            ? 'Paytm app launched'
+                            : 'Google Pay launched'}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                        <span style={{ color: '#9f2089', fontWeight: '700' }}>⏳</span>
+                        <span>Complete payment in app ({paymentCountdown}s remaining)</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ color: '#888' }}>⚡</span>
+                        <span>Order will confirm automatically upon return</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* While detecting app launch */
+                  <div
+                    style={{
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '12px',
+                      padding: '14px 16px',
+                      marginBottom: '16px',
+                      textAlign: 'left',
+                      fontSize: '12px',
+                      color: '#475569'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                      <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', background: '#9f2089', animation: 'paymentPulse 1s infinite' }} />
+                      <strong style={{ color: '#1e293b' }}>
+                        {fallbackStage === 'fallback_phonepe'
+                          ? 'Paytm not found. Trying PhonePe...'
+                          : 'Detecting installed UPI app...'}
+                      </strong>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.5px', color: '#64748b' }}>
+                      If your chosen app does not open automatically, we will switch to PhonePe or provide the QR scan.
+                    </p>
+                  </div>
+                )}
+
+                {/* Action buttons */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={handleManualConfirmPayment}
+                    style={{
+                      width: '100%',
+                      background: '#038d63',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      fontWeight: '700',
+                      fontSize: '13.5px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      boxShadow: '0 2px 8px rgba(3, 141, 99, 0.25)'
+                    }}
+                  >
+                    <span>✓</span>
+                    <span>I Have Paid • Confirm Order Now ➔</span>
+                  </button>
+
+                  {/* Fallback to PhonePe button if on Paytm */}
+                  {activePaymentMethod !== 'phonepe' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFallbackStage('fallback_phonepe');
+                        setModalStatusText('Switching to PhonePe...');
+                        triggerAppIntent('phonepe');
+                      }}
+                      style={{
+                        width: '100%',
+                        background: '#5f259f',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '11px 16px',
+                        borderRadius: '8px',
+                        fontWeight: '700',
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <img src="/phonepe.svg" alt="PhonePe" style={{ height: '16px' }} />
+                      <span>Pay with PhonePe Instead ➔</span>
+                    </button>
+                  )}
+
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleReopenPaymentApp()}
+                      style={{
+                        flex: 1,
+                        background: '#f1f5f9',
+                        color: '#475569',
+                        border: '1px solid #cbd5e1',
+                        padding: '9px 12px',
+                        borderRadius: '8px',
+                        fontWeight: '600',
+                        fontSize: '12px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Re-open App ➔
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFallbackStage('no_app_qr')}
+                      style={{
+                        flex: 1,
+                        background: '#fdf4ff',
+                        color: '#9f2089',
+                        border: '1px solid #f3e8f9',
+                        padding: '9px 12px',
+                        borderRadius: '8px',
+                        fontWeight: '700',
+                        fontSize: '12px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Show QR Code 📱
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* STAGE 3: NO APP FOUND -> DEDICATED QR & UTR FALLBACK (NO FAKE AUTO-CONFIRMATION) */}
+            {fallbackStage === 'no_app_qr' && (
+              <div>
+                <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#fff7ed', border: '2px solid #fed7aa', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', marginBottom: '10px' }}>
+                  📱
+                </div>
+
+                <h4 style={{ margin: '0 0 4px', fontSize: '16px', fontWeight: '800', color: '#1a1a1a' }}>
+                  UPI App Not Found on Device
+                </h4>
+                <p style={{ fontSize: '12px', color: '#64748b', margin: '0 0 14px', lineHeight: '1.4' }}>
+                  Scan this QR code with <strong>PhonePe, GPay, or Paytm</strong> on any phone, or copy the UPI ID to pay:
+                </p>
+
+                {/* QR Code Frame */}
+                {qrCodeDataUrl ? (
+                  <div style={{ display: 'inline-block', padding: '10px', background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', marginBottom: '12px' }}>
+                    <img src={qrCodeDataUrl} alt="UPI QR Code" style={{ width: '170px', height: '170px', display: 'block' }} />
+                    <div style={{ marginTop: '6px', fontSize: '13px', fontWeight: '800', color: '#038d63' }}>
+                      Pay ₹{finalPayable.toFixed(2)}
+                    </div>
+                  </div>
+                ) : (
+                  <p style={{ fontSize: '12px', color: '#888' }}>Generating payment QR...</p>
+                )}
+
+                {/* Copy UPI ID */}
+                <div style={{ marginBottom: '14px' }}>
+                  <button
+                    type="button"
+                    onClick={copyUpiId}
+                    style={{
+                      background: copiedUpi ? '#038d63' : '#f8fafc',
+                      color: copiedUpi ? '#fff' : '#1e293b',
+                      border: '1px solid #cbd5e1',
+                      padding: '8px 14px',
+                      borderRadius: '20px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <span>{copiedUpi ? '✓' : '📋'}</span>
+                    <span>{copiedUpi ? 'UPI ID Copied!' : `Copy UPI ID: ${DEFAULT_PAYEE_VPA}`}</span>
+                  </button>
+                </div>
+
+                {/* Enter 12-Digit UTR */}
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px 14px', marginBottom: '14px', textAlign: 'left' }}>
+                  <label style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '4px' }}>
+                    Enter 12-Digit UPI Ref / UTR No. *
+                  </label>
+                  <p style={{ fontSize: '11px', color: '#64748b', margin: '0 0 8px' }}>
+                    Find the 12-digit UTR in your PhonePe / Paytm payment receipt after paying.
+                  </p>
+                  {modalUtrError && (
+                    <div style={{ color: '#c62828', fontSize: '11px', marginBottom: '6px' }}>
+                      {modalUtrError}
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <input
+                      type="text"
+                      maxLength={12}
+                      placeholder="e.g. 412345678901"
+                      value={modalUtrInput}
+                      onChange={(e) => setModalUtrInput(e.target.value.replace(/\D/g, ''))}
+                      style={{
+                        flex: 1,
+                        padding: '10px 12px',
+                        border: '1px solid #cbd5e1',
+                        borderRadius: '6px',
+                        fontSize: '13.5px',
+                        fontWeight: '600'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleModalVerifyUtr}
+                      disabled={modalVerifyingUtr}
+                      style={{
+                        background: '#038d63',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '10px 14px',
+                        borderRadius: '6px',
+                        fontWeight: '700',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {modalVerifyingUtr ? 'Verifying...' : 'Submit UTR ➔'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Retry Buttons */}
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFallbackStage('initial');
+                      setModalStatusText('Opening PhonePe...');
+                      triggerAppIntent('phonepe');
+                    }}
+                    style={{
+                      flex: 1,
+                      background: '#5f259f',
+                      color: '#fff',
+                      border: 'none',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Open PhonePe ➔
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFallbackStage('initial');
+                      setModalStatusText('Opening Paytm...');
+                      triggerAppIntent('paytm');
+                    }}
+                    style={{
+                      flex: 1,
+                      background: '#002e6e',
+                      color: '#fff',
+                      border: 'none',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Open Paytm ➔
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleManualConfirmPayment}
+                  style={{
+                    width: '100%',
+                    background: 'none',
+                    border: '1px solid #cbd5e1',
+                    color: '#64748b',
+                    padding: '8px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    fontWeight: '600'
+                  }}
+                >
+                  I have completed payment in my app ➔
+                </button>
               </div>
-
-              <div style={{ marginTop: '12px', textAlign: 'left', fontSize: '11.5px', color: '#475569' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                  <span style={{ color: '#038d63', fontWeight: '700' }}>✓</span>
-                  <span>Payment intent requested in app</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                  <span style={{ color: '#9f2089', fontWeight: '700' }}>⏳</span>
-                  <span>Verifying transaction with bank ({paymentCountdown}s remaining)</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ color: '#888' }}>⚡</span>
-                  <span style={{ color: '#888' }}>Order will auto-confirm at 0s</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Action buttons */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <button
-                type="button"
-                onClick={handleManualConfirmPayment}
-                style={{
-                  width: '100%',
-                  background: '#038d63',
-                  color: '#ffffff',
-                  border: 'none',
-                  padding: '12px 16px',
-                  borderRadius: '8px',
-                  fontWeight: '700',
-                  fontSize: '13.5px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  boxShadow: '0 2px 8px rgba(3, 141, 99, 0.25)'
-                }}
-              >
-                <span>✓</span>
-                <span>I Have Paid • Confirm Order Now ➔</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleReopenPaymentApp}
-                style={{
-                  width: '100%',
-                  background: '#f1f5f9',
-                  color: '#475569',
-                  border: '1px solid #cbd5e1',
-                  padding: '10px 16px',
-                  borderRadius: '8px',
-                  fontWeight: '600',
-                  fontSize: '12px',
-                  cursor: 'pointer'
-                }}
-              >
-                App didn't open? Tap to Re-open ➔
-              </button>
-            </div>
+            )}
 
             {/* Bank Grade Security Footer */}
             <div style={{ marginTop: '14px', fontSize: '11px', color: '#94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
               <span>🛡️</span>
-              <span>256-Bit Bank Grade Encryption • Do not refresh</span>
+              <span>256-Bit Bank Grade Encryption • 100% Secure</span>
             </div>
           </div>
         </div>
