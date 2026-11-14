@@ -63,9 +63,9 @@ export default function CheckoutPage() {
   // Placed order snapshot
   const [completedOrderSnapshot, setCompletedOrderSnapshot] = useState(null);
 
-  // 10-Second Payment App Waiting Modal & Smart Fallback State
+  // 2-Minute (120s) Payment App Waiting Modal & Smart Fallback State
   const [isWaitingPayment, setIsWaitingPayment] = useState(false);
-  const [paymentCountdown, setPaymentCountdown] = useState(10);
+  const [paymentCountdown, setPaymentCountdown] = useState(120);
   const [activePaymentMethod, setActivePaymentMethod] = useState('phonepe');
   const [activeDeepLink, setActiveDeepLink] = useState('');
   const [hasAppOpened, setHasAppOpened] = useState(false);
@@ -502,7 +502,7 @@ export default function CheckoutPage() {
     hasAppOpenedRef.current = false;
     setHasAppOpened(false);
     setFallbackStage('initial');
-    setPaymentCountdown(10);
+    setPaymentCountdown(120);
     setModalUtrInput('');
     setModalUtrError('');
     setIsWaitingPayment(true);
@@ -1654,7 +1654,7 @@ export default function CheckoutPage() {
               onClick={() => {
                 setShowMetaModal(false);
                 setActivePaymentMethod('phonepe');
-                setPaymentCountdown(10);
+                setPaymentCountdown(120);
                 setIsWaitingPayment(true);
               }}
               style={{
@@ -1858,14 +1858,15 @@ export default function CheckoutPage() {
                           background: '#fdf4ff',
                           padding: '2px 8px',
                           borderRadius: '10px',
-                          border: '1px solid #f3e8f9'
+                          border: '1px solid #f3e8f9',
+                          fontVariantNumeric: 'tabular-nums'
                         }}
                       >
-                        ⏱️ {paymentCountdown}s
+                        ⏱️ {Math.floor(paymentCountdown / 60)}:{String(paymentCountdown % 60).padStart(2, '0')}
                       </span>
                     </div>
 
-                    {/* Progress Bar filling over 10 seconds */}
+                    {/* Progress Bar filling over 120 seconds (2 minutes) */}
                     <div
                       style={{
                         width: '100%',
@@ -1878,7 +1879,7 @@ export default function CheckoutPage() {
                       <div
                         style={{
                           height: '100%',
-                          width: `${((10 - paymentCountdown) / 10) * 100}%`,
+                          width: `${((120 - paymentCountdown) / 120) * 100}%`,
                           background: 'linear-gradient(90deg, #9f2089, #038d63)',
                           transition: 'width 1s linear',
                           borderRadius: '3px'
@@ -1899,7 +1900,7 @@ export default function CheckoutPage() {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                         <span style={{ color: '#9f2089', fontWeight: '700' }}>⏳</span>
-                        <span>Complete payment in app ({paymentCountdown}s remaining)</span>
+                        <span>Complete payment in app ({Math.floor(paymentCountdown / 60)}:{String(paymentCountdown % 60).padStart(2, '0')} remaining)</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span style={{ color: '#888' }}>⚡</span>

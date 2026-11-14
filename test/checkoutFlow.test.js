@@ -55,14 +55,14 @@ describe('Checkout & Cart Calculation Verification', () => {
     assert.equal(address.phone, '9876543210');
   });
 
-  test('10-second payment countdown timer transitions to order confirmed when app has opened', () => {
-    let countdown = 10;
+  test('2-minute (120s) payment countdown timer transitions to order confirmed when app has opened', () => {
+    let countdown = 120;
     let orderFinalized = false;
     let currentStep = 3;
     const hasAppOpened = true;
 
-    // Simulate 10 second countdown ticks
-    for (let tick = 1; tick <= 10; tick++) {
+    // Simulate 120 second countdown ticks
+    for (let tick = 1; tick <= 120; tick++) {
       if (hasAppOpened) {
         countdown -= 1;
         if (countdown <= 0) {
