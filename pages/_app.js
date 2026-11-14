@@ -7,7 +7,7 @@ import '../styles/theme.css';
 import '../styles/SafePage.css';
 
 export default function App({ Component, pageProps }) {
-  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID || '1190211293630447';
+  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID || '3697848340364773';
 
   return (
     <CartProvider>
@@ -34,6 +34,15 @@ export default function App({ Component, pageProps }) {
           fbq('track', 'PageView');
         `}
       </Script>
+      <noscript>
+        <img
+          height="1"
+          width="1"
+          style={{ display: 'none' }}
+          src={`https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1`}
+          alt=""
+        />
+      </noscript>
 
       <CloakGate>
         <Component {...pageProps} />
