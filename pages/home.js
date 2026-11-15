@@ -11,17 +11,18 @@ export default function HomePage() {
   const { buyNow } = useCart();
   const { q } = router.query;
 
-  // Countdown timer state
-  const [timeLeft, setTimeLeft] = useState('02h 45m 12s');
+  // Urgent countdown timer state (nearest to end: rolling 15-minute window)
+  const [timeLeft, setTimeLeft] = useState('14m 28s');
+  const [selectedPriceTier, setSelectedPriceTier] = useState('all');
 
   useEffect(() => {
     const updateTimer = () => {
-      const now = new Date();
-      const totalSec = 86400 - (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds());
-      const h = String(Math.floor(totalSec / 3600)).padStart(2, '0');
-      const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
-      const s = String(totalSec % 60).padStart(2, '0');
-      setTimeLeft(`${h}h ${m}m ${s}s`);
+      const period = 15 * 60; // 15-minute rolling countdown
+      const currentSec = Math.floor(Date.now() / 1000) % period;
+      const remaining = period - currentSec;
+      const m = String(Math.floor(remaining / 60)).padStart(2, '0');
+      const s = String(remaining % 60).padStart(2, '0');
+      setTimeLeft(`${m}m ${s}s`);
     };
 
     updateTimer();
@@ -29,18 +30,28 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Filter products by search query if present
+  // Filter products by search query and price tier (99, 149, 199)
   const displayProducts = React.useMemo(() => {
-    if (!q || typeof q !== 'string') return ALL_PRODUCTS;
+    let list = ALL_PRODUCTS;
+    if (selectedPriceTier === '99') {
+      list = list.filter((p) => p.price === 99);
+    } else if (selectedPriceTier === '149') {
+      list = list.filter((p) => p.price === 149);
+    } else if (selectedPriceTier === '199') {
+      list = list.filter((p) => p.price === 199);
+    }
+
+    if (!q || typeof q !== 'string') return list;
     const cleanQ = q.toLowerCase().trim();
-    return ALL_PRODUCTS.filter(p =>
-      p.title.toLowerCase().includes(cleanQ) ||
-      p.category.toLowerCase().includes(cleanQ) ||
-      (p.subCategory && p.subCategory.toLowerCase().includes(cleanQ)) ||
-      (p.color && p.color.toLowerCase().includes(cleanQ)) ||
-      (p.fabric && p.fabric.toLowerCase().includes(cleanQ))
+    return list.filter(
+      (p) =>
+        p.title.toLowerCase().includes(cleanQ) ||
+        p.category.toLowerCase().includes(cleanQ) ||
+        (p.subCategory && p.subCategory.toLowerCase().includes(cleanQ)) ||
+        (p.color && p.color.toLowerCase().includes(cleanQ)) ||
+        (p.fabric && p.fabric.toLowerCase().includes(cleanQ))
     );
-  }, [q]);
+  }, [q, selectedPriceTier]);
 
   return (
     <Layout>
@@ -100,12 +111,12 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Daily Deals Bar with Countdown */}
+      {/* Daily Deals Bar with Urgent Countdown */}
       <div className="daily-deals-root">
         <div className="daily-deals-container">
           <div className="daily-deals-title-group">
-            <h5 className="daily-deals-heading">Daily Deals</h5>
-            <span className="daily-deals-badge">Ends in</span>
+            <h5 className="daily-deals-heading">🔥 Maha Flash Sale</h5>
+            <span className="daily-deals-badge">Ending in</span>
           </div>
           <div className="offer-timer-pill">
             <img
@@ -120,10 +131,86 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* Best-Selling Price Tiers Section */}
+      <div className="price-sections-header">
+        <div className="price-urgency-strip">
+          <span className="price-urgency-pulse" />
+          <span>⚡ Lowest wholesale rates of the year! Reverting to MRP in {timeLeft}</span>
+        </div>
+
+        {/* 3 Quick Jump Price Cards */}
+        <div className="price-tier-cards-row">
+          <div
+            className={`price-tier-card card-99 ${selectedPriceTier === '99' ? 'active' : ''}`}
+            onClick={() => setSelectedPriceTier(selectedPriceTier === '99' ? 'all' : '99')}
+          >
+            <span className="tier-tag">🔥 Mega Deals</span>
+            <span className="tier-amount">₹99 Store</span>
+            <span className="tier-desc">20 Best Sellers</span>
+          </div>
+          <div
+            className={`price-tier-card card-149 ${selectedPriceTier === '149' ? 'active' : ''}`}
+            onClick={() => setSelectedPriceTier(selectedPriceTier === '149' ? 'all' : '149')}
+          >
+            <span className="tier-tag">💎 Heavy Winter</span>
+            <span className="tier-amount">₹149 Store</span>
+            <span className="tier-desc">15 Best Sellers</span>
+          </div>
+          <div
+            className={`price-tier-card card-199 ${selectedPriceTier === '199' ? 'active' : ''}`}
+            onClick={() => setSelectedPriceTier(selectedPriceTier === '199' ? 'all' : '199')}
+          >
+            <span className="tier-tag">👑 Royal Combos</span>
+            <span className="tier-amount">₹199 Store</span>
+            <span className="tier-desc">15 Best Sellers</span>
+          </div>
+        </div>
+
+        {/* Filter Pills */}
+        <div className="price-filter-tabs-bar">
+          <button
+            type="button"
+            className={`price-filter-pill ${selectedPriceTier === 'all' ? 'active' : ''}`}
+            onClick={() => setSelectedPriceTier('all')}
+          >
+            🌟 All Deals (50)
+          </button>
+          <button
+            type="button"
+            className={`price-filter-pill ${selectedPriceTier === '99' ? 'active' : ''}`}
+            onClick={() => setSelectedPriceTier('99')}
+          >
+            ⚡ ₹99 Store (20)
+          </button>
+          <button
+            type="button"
+            className={`price-filter-pill ${selectedPriceTier === '149' ? 'active' : ''}`}
+            onClick={() => setSelectedPriceTier('149')}
+          >
+            💎 ₹149 Store (15)
+          </button>
+          <button
+            type="button"
+            className={`price-filter-pill ${selectedPriceTier === '199' ? 'active' : ''}`}
+            onClick={() => setSelectedPriceTier('199')}
+          >
+            👑 ₹199 Store (15)
+          </button>
+        </div>
+      </div>
+
       {/* Products Section */}
       <div className="products-section-wrap" style={{ padding: '0 8px' }}>
         <h4 className="section-title">
-          {q ? `Search Results for "${q}"` : 'Products For You'}
+          {q
+            ? `Search Results for "${q}"`
+            : selectedPriceTier === '99'
+            ? '⚡ ₹99 Store - Top Trending Combos & Jackets (20 Items)'
+            : selectedPriceTier === '149'
+            ? '💎 ₹149 Store - Heavy Winter Hoodies & Jackets (15 Items)'
+            : selectedPriceTier === '199'
+            ? '👑 ₹199 Store - Royal Festive Sets & Dry Fruits (15 Items)'
+            : '🔥 Best Selling Trending Deals (50 Items)'}
         </h4>
 
         <div className="product-list-2col" id="productListGrid">
@@ -137,6 +224,7 @@ export default function HomePage() {
               <div className="product-img">
                 <img src={p.image} alt={p.title} loading="lazy" />
                 {p.isHotSell && <div className="hot-sell-badge">Hot Sell</div>}
+                <div className={`price-corner-badge badge-${p.price}`}>₹{p.price}</div>
               </div>
 
               <div className="product-details">

@@ -74,12 +74,12 @@ describe('Merchant Configuration & Routing Verification', () => {
     assert.ok(!uri.includes('sign='), 'iOS URI must NOT contain sign= parameter');
   });
 
-  test('Product catalog contains exactly 32 products with local image paths', () => {
-    assert.equal(ALL_PRODUCTS.length, 32);
+  test('Product catalog contains exactly 50 products with valid image paths', () => {
+    assert.equal(ALL_PRODUCTS.length, 50);
     ALL_PRODUCTS.forEach(p => {
-      assert.ok(p.id >= 1 && p.id <= 32);
-      assert.ok(p.price === 99);
-      assert.ok(p.image.startsWith('/images/products/'));
+      assert.ok(p.id >= 1 && p.id <= 50);
+      assert.ok([99, 149, 199].includes(p.price));
+      assert.ok(p.image.startsWith('/images/') || p.image.startsWith('https://'));
     });
   });
 

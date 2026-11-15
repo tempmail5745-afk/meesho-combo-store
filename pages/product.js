@@ -13,7 +13,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState(getProductById(1));
   const [activeImage, setActiveImage] = useState(product.image);
   const [selectedSize, setSelectedSize] = useState('M');
-  const [timeLeft, setTimeLeft] = useState('02h 45m 12s');
+  const [timeLeft, setTimeLeft] = useState('14m 28s');
 
   useEffect(() => {
     if (id) {
@@ -39,12 +39,12 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     const updateTimer = () => {
-      const now = new Date();
-      const totalSec = 86400 - (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds());
-      const h = String(Math.floor(totalSec / 3600)).padStart(2, '0');
-      const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
-      const s = String(totalSec % 60).padStart(2, '0');
-      setTimeLeft(`${h}h ${m}m ${s}s`);
+      const period = 15 * 60; // 15-minute rolling countdown nearest to end
+      const currentSec = Math.floor(Date.now() / 1000) % period;
+      const remaining = period - currentSec;
+      const m = String(Math.floor(remaining / 60)).padStart(2, '0');
+      const s = String(remaining % 60).padStart(2, '0');
+      setTimeLeft(`${m}m ${s}s`);
     };
 
     updateTimer();
