@@ -90,13 +90,14 @@ describe('Merchant Configuration & Routing Verification', () => {
 
   test('getProductById retrieves correct trending products across price tiers', () => {
     const p1 = getProductById(1);
-    assert.ok(p1.title.includes('Aviator Sunglasses'));
+    assert.ok(p1.title.includes('Biker Jacket Combo'));
     assert.equal(p1.price, 99);
-    assert.equal(p1.category, 'Eyewear & Accessories');
+    assert.equal(p1.category, 'Jackets & Winterwear');
 
     const p51 = getProductById(51);
-    assert.ok(p51.title.includes('Earbuds'));
+    assert.ok(p51.title.includes('Fleece Hoodie'));
     assert.equal(p51.price, 149);
+    assert.equal(p51.category, 'Hoodies & Winterwear');
 
     const p101 = getProductById(101);
     assert.ok(p101.title.includes('Smartwatch'));

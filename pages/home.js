@@ -144,23 +144,23 @@ export default function HomePage() {
             className={`price-tier-card card-99 ${selectedPriceTier === '99' ? 'active' : ''}`}
             onClick={() => setSelectedPriceTier(selectedPriceTier === '99' ? 'all' : '99')}
           >
-            <span className="tier-tag">⚡ Mega Deals</span>
+            <span className="tier-tag">⚡ Advertised Deals</span>
             <span className="tier-amount">₹99 Store</span>
-            <span className="tier-desc">Goggles, Specs & Perfumes</span>
+            <span className="tier-desc">Winter Jackets & Combos</span>
           </div>
           <div
             className={`price-tier-card card-149 ${selectedPriceTier === '149' ? 'active' : ''}`}
             onClick={() => setSelectedPriceTier(selectedPriceTier === '149' ? 'all' : '149')}
           >
-            <span className="tier-tag">💎 Audio & Sneakers</span>
+            <span className="tier-tag">💎 Heavy Winter</span>
             <span className="tier-amount">₹149 Store</span>
-            <span className="tier-desc">AirPods, Shoes & Hoodies</span>
+            <span className="tier-desc">380 GSM Hoodies & Audio</span>
           </div>
           <div
             className={`price-tier-card card-199 ${selectedPriceTier === '199' ? 'active' : ''}`}
             onClick={() => setSelectedPriceTier(selectedPriceTier === '199' ? 'all' : '199')}
           >
-            <span className="tier-tag">👑 Premium Flagships</span>
+            <span className="tier-tag">👑 Flagship Deals</span>
             <span className="tier-amount">₹199 Store</span>
             <span className="tier-desc">Smartwatches & Dry Fruits</span>
           </div>
@@ -180,21 +180,21 @@ export default function HomePage() {
             className={`price-filter-pill ${selectedPriceTier === '99' ? 'active' : ''}`}
             onClick={() => setSelectedPriceTier('99')}
           >
-            ⚡ ₹99 Store (50)
+            ⚡ ₹99 Jackets & Deals (50)
           </button>
           <button
             type="button"
             className={`price-filter-pill ${selectedPriceTier === '149' ? 'active' : ''}`}
             onClick={() => setSelectedPriceTier('149')}
           >
-            💎 ₹149 Store (50)
+            💎 ₹149 Hoodies & Audio (50)
           </button>
           <button
             type="button"
             className={`price-filter-pill ${selectedPriceTier === '199' ? 'active' : ''}`}
             onClick={() => setSelectedPriceTier('199')}
           >
-            👑 ₹199 Store (50)
+            👑 ₹199 Smartwatches (50)
           </button>
         </div>
       </div>
@@ -205,12 +205,12 @@ export default function HomePage() {
           {q
             ? `Search Results for "${q}"`
             : selectedPriceTier === '99'
-            ? '⚡ ₹99 Store - Goggles, Specs, Perfumes, Chains & Combos (50 Items)'
+            ? '⚡ ₹99 Store - Advertised Winter Jackets, Leather Combos, Goggles & Specs (50 Items)'
             : selectedPriceTier === '149'
-            ? '💎 ₹149 Store - AirPods, TWS Audio, Sneakers & Heavy Hoodies (50 Items)'
+            ? '💎 ₹149 Store - Advertised 380+ GSM Graphic Hoodies, Thermal Full Zips & Audio (50 Items)'
             : selectedPriceTier === '199'
-            ? '👑 ₹199 Store - AMOLED Smartwatches, 4KG Dry Fruits & Chanderi Sets (50 Items)'
-            : '🔥 Best Selling Trending Deals (150 Items)'}
+            ? '👑 ₹199 Store - AMOLED Calling Smartwatches, 4KG Dry Fruits & Chanderi Sets (50 Items)'
+            : '🔥 Advertised Top Bestsellers: Winter Jackets, Graphic Hoodies & Trending Deals (150 Items)'}
         </h4>
 
         <div className="product-list-2col" id="productListGrid">
