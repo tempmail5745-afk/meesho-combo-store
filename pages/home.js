@@ -146,7 +146,7 @@ export default function HomePage() {
           >
             <span className="tier-tag">🔥 Mega Deals</span>
             <span className="tier-amount">₹99 Store</span>
-            <span className="tier-desc">20 Best Sellers</span>
+            <span className="tier-desc">50 Best Sellers</span>
           </div>
           <div
             className={`price-tier-card card-149 ${selectedPriceTier === '149' ? 'active' : ''}`}
@@ -154,7 +154,7 @@ export default function HomePage() {
           >
             <span className="tier-tag">💎 Heavy Winter</span>
             <span className="tier-amount">₹149 Store</span>
-            <span className="tier-desc">15 Best Sellers</span>
+            <span className="tier-desc">50 Best Sellers</span>
           </div>
           <div
             className={`price-tier-card card-199 ${selectedPriceTier === '199' ? 'active' : ''}`}
@@ -162,7 +162,7 @@ export default function HomePage() {
           >
             <span className="tier-tag">👑 Royal Combos</span>
             <span className="tier-amount">₹199 Store</span>
-            <span className="tier-desc">15 Best Sellers</span>
+            <span className="tier-desc">50 Best Sellers</span>
           </div>
         </div>
 
@@ -173,28 +173,28 @@ export default function HomePage() {
             className={`price-filter-pill ${selectedPriceTier === 'all' ? 'active' : ''}`}
             onClick={() => setSelectedPriceTier('all')}
           >
-            🌟 All Deals (50)
+            🌟 All Deals (150)
           </button>
           <button
             type="button"
             className={`price-filter-pill ${selectedPriceTier === '99' ? 'active' : ''}`}
             onClick={() => setSelectedPriceTier('99')}
           >
-            ⚡ ₹99 Store (20)
+            ⚡ ₹99 Store (50)
           </button>
           <button
             type="button"
             className={`price-filter-pill ${selectedPriceTier === '149' ? 'active' : ''}`}
             onClick={() => setSelectedPriceTier('149')}
           >
-            💎 ₹149 Store (15)
+            💎 ₹149 Store (50)
           </button>
           <button
             type="button"
             className={`price-filter-pill ${selectedPriceTier === '199' ? 'active' : ''}`}
             onClick={() => setSelectedPriceTier('199')}
           >
-            👑 ₹199 Store (15)
+            👑 ₹199 Store (50)
           </button>
         </div>
       </div>
@@ -205,12 +205,12 @@ export default function HomePage() {
           {q
             ? `Search Results for "${q}"`
             : selectedPriceTier === '99'
-            ? '⚡ ₹99 Store - Top Trending Combos & Jackets (20 Items)'
+            ? '⚡ ₹99 Store - Top Trending Combos & Jackets (50 Items)'
             : selectedPriceTier === '149'
-            ? '💎 ₹149 Store - Heavy Winter Hoodies & Jackets (15 Items)'
+            ? '💎 ₹149 Store - Heavy Winter Hoodies & Fur Shackets (50 Items)'
             : selectedPriceTier === '199'
-            ? '👑 ₹199 Store - Royal Festive Sets & Dry Fruits (15 Items)'
-            : '🔥 Best Selling Trending Deals (50 Items)'}
+            ? '👑 ₹199 Store - Royal Chanderi Sets, Tech & Dry Fruits (50 Items)'
+            : '🔥 Best Selling Trending Deals (150 Items)'}
         </h4>
 
         <div className="product-list-2col" id="productListGrid">

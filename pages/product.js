@@ -72,27 +72,31 @@ export default function ProductDetailPage() {
           {product.isHotSell && <div className="hot-sell-badge">Hot Sell</div>}
         </div>
 
-        {/* 2. Variant Thumbnails */}
+        {/* 2. Variant Thumbnails Gallery */}
         <div className="color-div">
-          <div className="color-list p-2" style={{ display: 'flex', gap: '8px', padding: '8px' }}>
-            <div
-              className={`color-box ${activeImage === product.image ? 'active' : ''}`}
-              onClick={() => setActiveImage(product.image)}
-              style={{
-                width: '60px',
-                height: '60px',
-                border: activeImage === product.image ? '2px solid #9f2089' : '1px solid #ddd',
-                borderRadius: '8px',
-                overflow: 'hidden',
-                cursor: 'pointer'
-              }}
-            >
-              <img
-                src={product.image}
-                alt={product.title}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            </div>
+          <div className="color-list p-2" style={{ display: 'flex', gap: '8px', padding: '8px', overflowX: 'auto' }}>
+            {(product.images && product.images.length > 0 ? product.images : [product.image]).map((img, idx) => (
+              <div
+                key={idx}
+                className={`color-box ${activeImage === img ? 'active' : ''}`}
+                onClick={() => setActiveImage(img)}
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  flexShrink: 0,
+                  border: activeImage === img ? '2px solid #9f2089' : '1px solid #ddd',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  cursor: 'pointer'
+                }}
+              >
+                <img
+                  src={img}
+                  alt={`${product.title} view ${idx + 1}`}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+            ))}
           </div>
         </div>
 
@@ -248,44 +252,24 @@ export default function ProductDetailPage() {
 
           {/* Customer Reviews List */}
           <div className="reviews-list">
-            <div className="review-item">
-              <div className="review-user-row">
-                <div className="user-avatar-circle">G</div>
-                <div className="user-name-date">
-                  <span className="rev-name">Geeta Khan</span>
-                  <span className="rev-date">Posted on October 1, 2026</span>
+            {(product.reviews && product.reviews.length > 0 ? product.reviews : [
+              { id: 1, user: 'Geeta Khan', rating: 5, date: 'October 1, 2026', comment: 'Same as shown, Mst hai, ❤️❤️ Amazing quality and fast delivery!' },
+              { id: 2, user: 'Ajay Patil', rating: 4.8, date: 'September 28, 2026', comment: 'Exceeded my expectations, great job! Packaging was awesome.' },
+              { id: 3, user: 'Bhumi Shukla', rating: 4.5, date: 'September 24, 2026', comment: 'Really happy with the purchase! Value for money.' }
+            ]).map((rev, rIdx) => (
+              <div className="review-item" key={rev.id || rIdx}>
+                <div className="review-user-row">
+                  <div className="user-avatar-circle">{(rev.user || 'U')[0]}</div>
+                  <div className="user-name-date">
+                    <span className="rev-name">{rev.user}</span>
+                    <span className="rev-date">Posted on {rev.date}</span>
+                  </div>
                 </div>
+                <div className="review-rating-pill"><span>{rev.rating} ★</span></div>
+                <p className="review-comment-text">{rev.comment}</p>
+                <div className="review-helpful-row"><span>👍 Helpful ({500 + (rIdx * 115) + (product.id * 7) % 300})</span></div>
               </div>
-              <div className="review-rating-pill"><span>5.0 ★</span></div>
-              <p className="review-comment-text">Same as shown, Mst hai, ❤️❤️ Amazing quality and fast delivery!</p>
-              <div className="review-helpful-row"><span>👍 Helpful (742)</span></div>
-            </div>
-
-            <div className="review-item">
-              <div className="review-user-row">
-                <div className="user-avatar-circle">A</div>
-                <div className="user-name-date">
-                  <span className="rev-name">Ajay Patil</span>
-                  <span className="rev-date">Posted on September 28, 2026</span>
-                </div>
-              </div>
-              <div className="review-rating-pill"><span>4.8 ★</span></div>
-              <p className="review-comment-text">Exceeded my expectations, great job! Packaging was awesome.</p>
-              <div className="review-helpful-row"><span>👍 Helpful (620)</span></div>
-            </div>
-
-            <div className="review-item">
-              <div className="review-user-row">
-                <div className="user-avatar-circle">B</div>
-                <div className="user-name-date">
-                  <span className="rev-name">Bhumi Shukla</span>
-                  <span className="rev-date">Posted on September 24, 2026</span>
-                </div>
-              </div>
-              <div className="review-rating-pill"><span>4.5 ★</span></div>
-              <p className="review-comment-text">Really happy with the purchase! Value for money.</p>
-              <div className="review-helpful-row"><span>👍 Helpful (512)</span></div>
-            </div>
+            ))}
           </div>
         </div>
 

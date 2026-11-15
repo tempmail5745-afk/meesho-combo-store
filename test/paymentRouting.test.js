@@ -74,23 +74,28 @@ describe('Merchant Configuration & Routing Verification', () => {
     assert.ok(!uri.includes('sign='), 'iOS URI must NOT contain sign= parameter');
   });
 
-  test('Product catalog contains exactly 50 products with valid image paths', () => {
-    assert.equal(ALL_PRODUCTS.length, 50);
+  test('Product catalog contains exactly 150 products (50 in each price tier: 99, 149, 199)', () => {
+    assert.equal(ALL_PRODUCTS.length, 150);
+    assert.equal(ALL_PRODUCTS.filter(p => p.price === 99).length, 50);
+    assert.equal(ALL_PRODUCTS.filter(p => p.price === 149).length, 50);
+    assert.equal(ALL_PRODUCTS.filter(p => p.price === 199).length, 50);
     ALL_PRODUCTS.forEach(p => {
-      assert.ok(p.id >= 1 && p.id <= 50);
+      assert.ok(p.id >= 1 && p.id <= 150);
       assert.ok([99, 149, 199].includes(p.price));
       assert.ok(p.image.startsWith('/images/') || p.image.startsWith('https://'));
+      assert.ok(Array.isArray(p.images) && p.images.length > 0);
+      assert.ok(Array.isArray(p.reviews) && p.reviews.length > 0);
     });
   });
 
   test('getProductById retrieves correct combo product', () => {
     const p1 = getProductById(1);
-    assert.equal(p1.title, 'Burgundy Ombre Cord Jacket Combo');
-    assert.equal(p1.color, 'Burgundy');
+    assert.ok(p1.title.includes('Biker Jacket Combo'));
+    assert.equal(p1.price, 99);
 
     const p2 = getProductById(2);
-    assert.equal(p2.title, 'Brown Leather Zip Jacket Combo');
-    assert.equal(p2.color, 'Brown');
+    assert.equal(p2.title, 'Green & Cream Plaid Heavy Woolen Shacket Combo');
+    assert.equal(p2.color, 'Green Plaid');
   });
 });
 
