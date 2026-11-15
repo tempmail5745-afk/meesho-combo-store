@@ -8,7 +8,7 @@
 // 1. CONFIGURATION & CONSTANTS
 // ==============================================================================
 const CONFIG = {
-  merchantName: (window.UPI_CONFIG && window.UPI_CONFIG.merchantName) || 'Online Shopping',
+  merchantName: (window.UPI_CONFIG && window.UPI_CONFIG.merchantName) || 'Meesho Store',
   paytmUpiId: (window.UPI_CONFIG && window.UPI_CONFIG.paytmUpiId) || 'Q98220817@ybl',
   onlineDiscount: 33,
   pixelId: '1516351766999973'
