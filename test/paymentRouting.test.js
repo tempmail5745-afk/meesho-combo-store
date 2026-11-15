@@ -13,14 +13,14 @@ import { ALL_PRODUCTS, getProductById } from '../lib/products.js';
 describe('Merchant Configuration & Routing Verification', () => {
   test('Merchant default values match requested e-com-store credentials', () => {
     assert.equal(DEFAULT_PAYEE_VPA, 'Q98220817@ybl');
-    assert.equal(DEFAULT_PAYEE_NAME, 'Meesho');
-    assert.equal(DEFAULT_TRANSACTION_NOTE, 'Meesho');
+    assert.equal(DEFAULT_PAYEE_NAME, 'Messho');
+    assert.equal(DEFAULT_TRANSACTION_NOTE, 'Messho');
   });
 
   test('Android PhonePe native URI encodes valid base64 payload', () => {
     const uri = buildPhonePeNativeUri({
       vpa: 'Q98220817@ybl',
-      name: 'Meesho',
+      name: 'Messho',
       amount: 99
     });
 
@@ -33,20 +33,20 @@ describe('Merchant Configuration & Routing Verification', () => {
     assert.equal(decoded.p2pPaymentCheckoutParams.checkoutType, 'COLLECT');
     assert.equal(decoded.p2pPaymentCheckoutParams.initialAmount, 9900);
     assert.equal(decoded.contact.vpa, 'Q98220817@ybl');
-    assert.equal(decoded.contact.name, 'Meesho');
+    assert.equal(decoded.contact.name, 'Messho');
   });
 
   test('Android Paytm cash_wallet URI includes required parameters', () => {
     const uri = buildPaytmCashWalletUri({
       vpa: 'Q98220817@ybl',
-      name: 'Meesho',
+      name: 'Messho',
       amount: 99,
-      note: 'Meesho'
+      note: 'Messho'
     });
 
     assert.ok(uri.startsWith('paytmmp://cash_wallet?'));
     assert.ok(uri.includes('pa=Q98220817%40ybl'));
-    assert.ok(uri.includes('pn=Meesho'));
+    assert.ok(uri.includes('pn=Messho'));
     assert.ok(uri.includes('am=99.00'));
     assert.ok(uri.includes('mc=8999'));
     assert.ok(uri.includes('featuretype=money_transfer'));
@@ -55,17 +55,17 @@ describe('Merchant Configuration & Routing Verification', () => {
   test('iOS PhonePe URI omits tr=, mc=, mode=, and sign= to prevent UPI link block', () => {
     const uri = buildIosPhonePeUri({
       vpa: 'Q98220817@ybl',
-      name: 'Meesho',
+      name: 'Messho',
       amount: 99,
-      note: 'Meesho'
+      note: 'Messho'
     });
 
     assert.ok(uri.startsWith('phonepe:upi://pay?'));
     assert.ok(uri.includes('pa=Q98220817@ybl'));
-    assert.ok(uri.includes('pn=Meesho'));
+    assert.ok(uri.includes('pn=Messho'));
     assert.ok(uri.includes('am=99.00'));
     assert.ok(uri.includes('cu=INR'));
-    assert.ok(uri.includes('tn=Meesho'));
+    assert.ok(uri.includes('tn=Messho'));
 
     // Critical negative assertions
     assert.ok(!uri.includes('tr='), 'iOS URI must NOT contain tr= parameter');
