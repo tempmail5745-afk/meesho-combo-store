@@ -144,25 +144,25 @@ export default function HomePage() {
             className={`price-tier-card card-99 ${selectedPriceTier === '99' ? 'active' : ''}`}
             onClick={() => setSelectedPriceTier(selectedPriceTier === '99' ? 'all' : '99')}
           >
-            <span className="tier-tag">🔥 Mega Deals</span>
+            <span className="tier-tag">⚡ Mega Deals</span>
             <span className="tier-amount">₹99 Store</span>
-            <span className="tier-desc">50 Best Sellers</span>
+            <span className="tier-desc">Goggles, Specs & Perfumes</span>
           </div>
           <div
             className={`price-tier-card card-149 ${selectedPriceTier === '149' ? 'active' : ''}`}
             onClick={() => setSelectedPriceTier(selectedPriceTier === '149' ? 'all' : '149')}
           >
-            <span className="tier-tag">💎 Heavy Winter</span>
+            <span className="tier-tag">💎 Audio & Sneakers</span>
             <span className="tier-amount">₹149 Store</span>
-            <span className="tier-desc">50 Best Sellers</span>
+            <span className="tier-desc">AirPods, Shoes & Hoodies</span>
           </div>
           <div
             className={`price-tier-card card-199 ${selectedPriceTier === '199' ? 'active' : ''}`}
             onClick={() => setSelectedPriceTier(selectedPriceTier === '199' ? 'all' : '199')}
           >
-            <span className="tier-tag">👑 Royal Combos</span>
+            <span className="tier-tag">👑 Premium Flagships</span>
             <span className="tier-amount">₹199 Store</span>
-            <span className="tier-desc">50 Best Sellers</span>
+            <span className="tier-desc">Smartwatches & Dry Fruits</span>
           </div>
         </div>
 
@@ -205,11 +205,11 @@ export default function HomePage() {
           {q
             ? `Search Results for "${q}"`
             : selectedPriceTier === '99'
-            ? '⚡ ₹99 Store - Top Trending Combos & Jackets (50 Items)'
+            ? '⚡ ₹99 Store - Goggles, Specs, Perfumes, Chains & Combos (50 Items)'
             : selectedPriceTier === '149'
-            ? '💎 ₹149 Store - Heavy Winter Hoodies & Fur Shackets (50 Items)'
+            ? '💎 ₹149 Store - AirPods, TWS Audio, Sneakers & Heavy Hoodies (50 Items)'
             : selectedPriceTier === '199'
-            ? '👑 ₹199 Store - Royal Chanderi Sets, Tech & Dry Fruits (50 Items)'
+            ? '👑 ₹199 Store - AMOLED Smartwatches, 4KG Dry Fruits & Chanderi Sets (50 Items)'
             : '🔥 Best Selling Trending Deals (150 Items)'}
         </h4>
 
